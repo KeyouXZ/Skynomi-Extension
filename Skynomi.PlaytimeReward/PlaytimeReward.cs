@@ -2,18 +2,22 @@
 using System.Reflection;
 using Skynomi.Utils;
 using TerrariaApi.Server;
+using TShockAPI.Hooks;
 
 namespace Skynomi.PlaytimeReward
 {
-    public class PlaytimeReward : Loader.ISkynomiExtension, Loader.ISkynomiExtensionDisposable
+    public class PlaytimeReward : Loader.ISkynomiExtension, Loader.ISkynomiExtensionDisposable, Loader.ISkynomiExtensionReloadable
     {
         public string Name => "Playtime Reward";
         public string Description => "Playtime Reward extension for Skynomi";
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
         public Version Version => new Version(Assembly.GetExecutingAssembly().GetName().Version.Major, Assembly.GetExecutingAssembly().GetName().Version.Minor, Assembly.GetExecutingAssembly().GetName().Version.Build);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
         public string Author => "Keyou";
 
         public static DateTime lastTime = DateTime.UtcNow;
         public static List<string> onlinePlayers = new List<string>();
+        public static Skynomi.PlaytimeReward.Config? config;
 
         public void Initialize()
         {
@@ -23,6 +27,14 @@ namespace Skynomi.PlaytimeReward
             Skynomi.PlaytimeReward.Database.Initialize();
             Skynomi.PlaytimeReward.Commands.Initialize();
 
+            config = Skynomi.PlaytimeReward.Config.Read();
+
+            Save();
+        }
+
+        public void Reload(ReloadEventArgs args)
+        {
+            config = Skynomi.PlaytimeReward.Config.Read();
             Save();
         }
 
