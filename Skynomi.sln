@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skynomi.PlaytimeReward", "Skynomi.PlaytimeReward\Skynomi.PlaytimeReward.csproj", "{56D7E57E-611B-4E91-A43E-0CE92F9F2433}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skynomi.Auction", "Skynomi.Auction\Skynomi.Auction.csproj", "{ADD23051-459E-4B03-8782-74DFAD903D98}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{56D7E57E-611B-4E91-A43E-0CE92F9F2433}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{56D7E57E-611B-4E91-A43E-0CE92F9F2433}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{56D7E57E-611B-4E91-A43E-0CE92F9F2433}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADD23051-459E-4B03-8782-74DFAD903D98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADD23051-459E-4B03-8782-74DFAD903D98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADD23051-459E-4B03-8782-74DFAD903D98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADD23051-459E-4B03-8782-74DFAD903D98}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,4 +1,5 @@
 ﻿using TShockAPI;
+using System.Reflection;
 using Skynomi.Utils;
 using TerrariaApi.Server;
 
@@ -8,18 +9,18 @@ namespace Skynomi.PlaytimeReward
     {
         public string Name => "Playtime Reward";
         public string Description => "Playtime Reward extension for Skynomi";
+        public Version Version => new Version(Assembly.GetExecutingAssembly().GetName().Version.Major, Assembly.GetExecutingAssembly().GetName().Version.Minor, Assembly.GetExecutingAssembly().GetName().Version.Build);
         public string Author => "Keyou";
-        public string Version => "1.0.0";
 
         public static DateTime lastTime = DateTime.UtcNow;
-        public static Dictionary<string, int> onlinePlayers = new();
+        public static List<string> onlinePlayers = new List<string>();
 
         public void Initialize()
         {
             ServerApi.Hooks.ServerJoin.Register(Loader.GetPlugin(), PlayerJoin);
             ServerApi.Hooks.ServerLeave.Register(Loader.GetPlugin(), PlayerLeave);
 
-            Skynomi.PlaytimeReward.Database.Initialize().GetAwaiter();
+            Skynomi.PlaytimeReward.Database.Initialize();
             Skynomi.PlaytimeReward.Commands.Initialize();
 
             Save();
@@ -35,7 +36,7 @@ namespace Skynomi.PlaytimeReward
                 while (!cts.IsCancellationRequested)
                 {
                     await Task.Delay(TimeSpan.FromMinutes(5), cts.Token);
-                    UpdateTime(1);
+                    UpdateTime();
                 }
             }, cts.Token);
         }
@@ -43,16 +44,8 @@ namespace Skynomi.PlaytimeReward
         public void PlayerJoin(JoinEventArgs args)
         {
             UpdateTime();
-            Skynomi.PlaytimeReward.Database.CreatePlayer(TShock.Players[args.Who].Name).GetAwaiter();
-            try
-            {
-                onlinePlayers.Add(TShock.Players[args.Who].Name, Skynomi.PlaytimeReward.Database.GetPlaytime(TShock.Players[args.Who].Name).GetAwaiter().GetResult());
-            }
-            catch (NullReferenceException)
-            {
-                Skynomi.PlaytimeReward.Database.CreatePlayer(TShock.Players[args.Who].Name).GetAwaiter();
-                onlinePlayers.Add(TShock.Players[args.Who].Name, 0);
-            }
+            Skynomi.PlaytimeReward.Database.CreatePlayer(TShock.Players[args.Who].Name);
+            onlinePlayers.Add(TShock.Players[args.Who].Name);
         }
 
         public void PlayerLeave(LeaveEventArgs args)
@@ -61,23 +54,23 @@ namespace Skynomi.PlaytimeReward
             onlinePlayers.Remove(TShock.Players[args.Who].Name);
         }
 
-        public static void UpdateTime(int status = 0)
+        public static void UpdateTime()
         {
             if ((DateTime.UtcNow - lastTime).TotalMinutes < 1)
             {
                 return;
             }
-            foreach (var plr in onlinePlayers)
-            {
-                onlinePlayers[plr.Key] += (int)(DateTime.UtcNow - lastTime).TotalMinutes;
-                if (status == 1) Skynomi.PlaytimeReward.Database.SaveData(plr.Key, onlinePlayers[plr.Key]).GetAwaiter();
+            foreach (string plr in onlinePlayers)
+            {            
+                var PlaytimeCache = Skynomi.Database.CacheManager.Cache.GetCache<int>("Playtime");
+                PlaytimeCache.Update(plr, PlaytimeCache.GetValue(plr) + (int)(DateTime.UtcNow - lastTime).TotalMinutes);
             }
             lastTime = DateTime.UtcNow;
         }
 
         public void Dispose() {
             cts?.Cancel();
-            UpdateTime(1);
+            UpdateTime();
         }
     }
 }

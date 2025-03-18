@@ -16,7 +16,7 @@ namespace Skynomi.PlaytimeReward
         private static void Playtime(CommandArgs args)
         {
             PlaytimeReward.UpdateTime();
-            args.Player.SendInfoMessage($"You have {PlaytimeReward.onlinePlayers[args.Player.Name]} mins unused playtime.");
+            args.Player.SendInfoMessage($"You have {Skynomi.Database.CacheManager.Cache.GetCache<int>("Playtime").GetValue(args.Player.Name)} mins unused playtime.");
         }
     }
 }

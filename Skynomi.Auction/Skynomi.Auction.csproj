@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Skynomi">
+      <HintPath>../References/Skynomi.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <PropertyGroup>
+		<Version>1.0.1</Version>
+		<FileVersion>1.0.1.0</FileVersion>
+		<AssemblyVersion>1.0.1.0</AssemblyVersion>
+		<InformationalVersion>1.0.1</InformationalVersion>
+	</PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TShock" Version="5.2.3" />
+  </ItemGroup>
+
+</Project>
