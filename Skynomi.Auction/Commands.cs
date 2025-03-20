@@ -100,15 +100,19 @@ namespace Skynomi.AuctionSystem
         {
             if (args.Parameters.Count < 2)
             {
-                args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /auctionadd <itemid> <price> [amount]");
+                args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /auctionadd <itemid/name> <price> [amount]");
                 return;
             }
 
             int itemid;
             if (!int.TryParse(args.Parameters[0], out itemid))
             {
-                args.Player.SendErrorMessage("Item ID must be a number!");
-                return;
+                itemid = TShock.Utils.GetItemByName(args.Parameters[0]).Where(x => x.Name.ToLower() == args.Parameters[0].ToLower()).Select(x => x.netID).FirstOrDefault();
+                if (itemid == 0)
+                {
+                    args.Player.SendErrorMessage("Item not found!");
+                    return;
+                }
             }
 
             int price;
@@ -224,7 +228,7 @@ namespace Skynomi.AuctionSystem
             {
                 if (args.Parameters.Count < 2)
                 {
-                    args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /auctionbuy <playername> <itemid> [amount]");
+                    args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /auctionbuy <playername> <itemid/name> [amount]");
                     return;
                 }
 
@@ -232,8 +236,12 @@ namespace Skynomi.AuctionSystem
                 int itemid;
                 if (!int.TryParse(args.Parameters[1], out itemid))
                 {
-                    args.Player.SendErrorMessage("Item ID must be a number!");
-                    return;
+                    itemid = TShock.Utils.GetItemByName(args.Parameters[1]).Where(x => x.Name.ToLower() == args.Parameters[1].ToLower()).Select(x => x.netID).FirstOrDefault();
+                    if (itemid == 0)
+                    {
+                        args.Player.SendErrorMessage("Item not found!");
+                        return;
+                    }
                 }
 
                 int amount = 1;
@@ -252,15 +260,15 @@ namespace Skynomi.AuctionSystem
                     return;
                 }
 
-                var data = AuctionSystem.Database.db.CustomVoid("SELECT Price, Amount FROM Auctions WHERE Username = @playername AND ItemId = @itemid", new { playername, itemid }, output: true);
+                var data = AuctionSystem.Database.listAuction(args.Player.Name);
                 if (data.Count == 0)
                 {
                     args.Player.SendErrorMessage("Auction not found!");
                     return;
                 }
 
-                int price = (int)data[0].Price;
-                int amountInAuction = (int)data[0].Amount;
+                int price = (int)((dynamic)data)[0].Price;
+                int amountInAuction = (int)((dynamic)data)[0].Amount;
 
                 if (amount > amountInAuction)
                 {
@@ -307,15 +315,19 @@ namespace Skynomi.AuctionSystem
             {
                 if (args.Parameters.Count < 1)
                 {
-                    args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /auctiondel <itemid>");
+                    args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /auctiondel <itemid/name>");
                     return;
                 }
 
                 int itemid;
                 if (!int.TryParse(args.Parameters[0], out itemid))
                 {
-                    args.Player.SendErrorMessage("Item ID must be a number!");
-                    return;
+                    itemid = TShock.Utils.GetItemByName(args.Parameters[0]).Where(x => x.Name.ToLower() == args.Parameters[0].ToLower()).Select(x => x.netID).FirstOrDefault();
+                    if (itemid == 0)
+                    {
+                        args.Player.SendErrorMessage("Item not found!");
+                        return;
+                    }
                 }
 
                 var auctions = AuctionSystem.Database.listAuction(args.Player.Name, true);
@@ -362,7 +374,7 @@ namespace Skynomi.AuctionSystem
             {
                 if (args.Parameters.Count < 2)
                 {
-                    args.Player.SendErrorMessage("Invalid syntax! Proper syntax: //auctiondel <playername> <itemid>");
+                    args.Player.SendErrorMessage("Invalid syntax! Proper syntax: //auctiondel <playername> <itemid/name>");
                     return;
                 }
 
@@ -370,8 +382,12 @@ namespace Skynomi.AuctionSystem
                 int itemid;
                 if (!int.TryParse(args.Parameters[1], out itemid))
                 {
-                    args.Player.SendErrorMessage("Item ID must be a number!");
-                    return;
+                    itemid = TShock.Utils.GetItemByName(args.Parameters[1]).Where(x => x.Name.ToLower() == args.Parameters[1].ToLower()).Select(x => x.netID).FirstOrDefault();
+                    if (itemid == 0)
+                    {
+                        args.Player.SendErrorMessage("Item not found!");
+                        return;
+                    }
                 }
 
                 var auctions = AuctionSystem.Database.listAuction(playername, true);
