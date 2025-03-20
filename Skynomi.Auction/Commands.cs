@@ -4,31 +4,31 @@ using Terraria;
 
 namespace Skynomi.AuctionSystem
 {
-    public class Commands
+    public abstract class Commands
     {
         public static void Initialize()
         {
-            TShockAPI.Commands.ChatCommands.Add(new Command(AuctionSystem.Permissions.List, AuctionList, "auctionlist", "aclist")
+            TShockAPI.Commands.ChatCommands.Add(new Command(Permissions.List, AuctionList, "auctionlist", "aclist")
             {
                 AllowServer = true,
                 HelpText = "Lists all auctions"
             });
-            TShockAPI.Commands.ChatCommands.Add(new Command(AuctionSystem.Permissions.Add, AuctionAdd, "auctionadd", "acadd")
+            TShockAPI.Commands.ChatCommands.Add(new Command(Permissions.Add, AuctionAdd, "auctionadd", "acadd")
             {
                 AllowServer = false,
                 HelpText = "Adds an auction"
             });
-            TShockAPI.Commands.ChatCommands.Add(new Command(AuctionSystem.Permissions.Buy, AuctionBuy, "auctionbuy", "acbuy")
+            TShockAPI.Commands.ChatCommands.Add(new Command(Permissions.Buy, AuctionBuy, "auctionbuy", "acbuy")
             {
                 AllowServer = false,
                 HelpText = "Buys an auction"
             });
-            TShockAPI.Commands.ChatCommands.Add(new Command(AuctionSystem.Permissions.Delete, AuctionRemove, "auctiondel", "acdel")
+            TShockAPI.Commands.ChatCommands.Add(new Command(Permissions.Delete, AuctionRemove, "auctiondel", "acdel")
             {
                 AllowServer = false,
                 HelpText = "Removes an auction"
             });
-            TShockAPI.Commands.ChatCommands.Add(new Command(AuctionSystem.Permissions.AdminDelete, AdminAuctionRemove, "/auctiondel", "/acdel")
+            TShockAPI.Commands.ChatCommands.Add(new Command(Permissions.AdminDelete, AdminAuctionRemove, "/auctiondel", "/acdel")
             {
                 AllowServer = true,
                 HelpText = "Admin Removes an auction"
@@ -36,12 +36,13 @@ namespace Skynomi.AuctionSystem
         }
 
         #region Auction List
-        public static void AuctionList(CommandArgs args)
+
+        private static void AuctionList(CommandArgs args)
         {
             string target = args.Parameters.Count > 0 ? args.Parameters[0] : "";
             bool anyTarget = target != "";
 
-            var listAuction = AuctionSystem.Database.listAuction(target, anyTarget);
+            var listAuction = Database.listAuction(target, anyTarget);
 
             if (!listAuction.Any() && !anyTarget)
             {
@@ -62,24 +63,22 @@ namespace Skynomi.AuctionSystem
                 foreach (var aauction in listAuction)
                 {
                     var auction = (dynamic)aauction;
-                    message += $"\n{counter}. [i/s{auction.Amount}:{auction.ItemId}] ({auction.ItemId}) for {Skynomi.Utils.Util.CurrencyFormat((int)auction.Price)}";
+                    message += $"\n{counter}. [i/s{auction.Amount}:{auction.ItemId}] ({auction.ItemId}) for {Utils.Util.CurrencyFormat((int)auction.Price)}";
                     counter++;
                 }
             }
             else
             {
                 Dictionary<string, int> itemCount = new Dictionary<string, int>();
-                foreach (var auction in listAuction)
+                foreach (var playerName in listAuction.Select(auction => ((dynamic)auction).Username))
                 {
-                    string playerName = ((dynamic)auction).Username;
-
-                    if (!itemCount.ContainsKey(playerName))
+                    if (!itemCount.ContainsKey((string)playerName))
                     {
-                        itemCount[playerName] = 1;
+                        itemCount[(string)playerName] = 1;
                     }
                     else
                     {
-                        itemCount[playerName] += 1;
+                        itemCount[(string)playerName] += 1;
                     }
                 }
 
@@ -91,12 +90,12 @@ namespace Skynomi.AuctionSystem
             }
 
             args.Player.SendInfoMessage(message);
-            return;
         }
         #endregion
 
         #region Auction Add
-        public static void AuctionAdd(CommandArgs args)
+
+        private static void AuctionAdd(CommandArgs args)
         {
             if (args.Parameters.Count < 2)
             {
@@ -104,8 +103,7 @@ namespace Skynomi.AuctionSystem
                 return;
             }
 
-            int itemid;
-            if (!int.TryParse(args.Parameters[0], out itemid))
+            if (!int.TryParse(args.Parameters[0], out var itemid))
             {
                 itemid = TShock.Utils.GetItemByName(args.Parameters[0]).Where(x => x.Name.ToLower() == args.Parameters[0].ToLower()).Select(x => x.netID).FirstOrDefault();
                 if (itemid == 0)
@@ -115,8 +113,7 @@ namespace Skynomi.AuctionSystem
                 }
             }
 
-            int price;
-            if (!int.TryParse(args.Parameters[1], out price))
+            if (!int.TryParse(args.Parameters[1], out var price))
             {
                 args.Player.SendErrorMessage("Price must be a number!");
                 return;
@@ -186,7 +183,7 @@ namespace Skynomi.AuctionSystem
                 return;
             }
 
-            if (AuctionSystem.Database.AddAuction(args.Player.Name, itemid, price, amount))
+            if (Database.AddAuction(args.Player.Name, itemid, price, amount))
             {
                 int remainingToRemove = amount;
                 for (int i = 0; i < args.Player.TPlayer.inventory.Length; i++)
@@ -196,21 +193,21 @@ namespace Skynomi.AuctionSystem
                         if (args.Player.TPlayer.inventory[i].stack > remainingToRemove)
                         {
                             args.Player.TPlayer.inventory[i].stack -= remainingToRemove;
-                            NetMessage.SendData((int)PacketTypes.PlayerSlot, -1, -1, null, args.Player.Index, i, 0, 0, 0, 0, 0);
+                            NetMessage.SendData((int)PacketTypes.PlayerSlot, -1, -1, null, args.Player.Index, i);
                             break;
                         }
                         else
                         {
                             remainingToRemove -= args.Player.TPlayer.inventory[i].stack;
                             args.Player.TPlayer.inventory[i].netDefaults(0);
-                            NetMessage.SendData((int)PacketTypes.PlayerSlot, -1, -1, null, args.Player.Index, i, 0, 0, 0, 0, 0);
+                            NetMessage.SendData((int)PacketTypes.PlayerSlot, -1, -1, null, args.Player.Index, i);
                         }
                     }
                 }
 
                 string detail = $"[c/00FF00:== Auction Add Succesfull ==]\n" +
                                 $"[c/0000FF:Item:] {TShock.Utils.GetItemById(itemid).Name} ([i/s{amount}:{itemid}])\n" +
-                                $"[c/0000FF:Price:] {Skynomi.Utils.Util.CurrencyFormat(price)}\n" +
+                                $"[c/0000FF:Price:] {Utils.Util.CurrencyFormat(price)}\n" +
                                 $"[c/0000FF:Amount:] {amount}";
                 args.Player.SendMessage(detail, Color.White);
             }
@@ -222,7 +219,8 @@ namespace Skynomi.AuctionSystem
         #endregion
 
         #region Auction Buy
-        public static void AuctionBuy(CommandArgs args)
+
+        private static void AuctionBuy(CommandArgs args)
         {
             try
             {
@@ -233,8 +231,7 @@ namespace Skynomi.AuctionSystem
                 }
 
                 string playername = args.Parameters[0];
-                int itemid;
-                if (!int.TryParse(args.Parameters[1], out itemid))
+                if (!int.TryParse(args.Parameters[1], out var itemid))
                 {
                     itemid = TShock.Utils.GetItemByName(args.Parameters[1]).Where(x => x.Name.ToLower() == args.Parameters[1].ToLower()).Select(x => x.netID).FirstOrDefault();
                     if (itemid == 0)
@@ -260,7 +257,7 @@ namespace Skynomi.AuctionSystem
                     return;
                 }
 
-                var data = AuctionSystem.Database.listAuction(args.Player.Name);
+                var data = Database.listAuction(args.Player.Name);
                 if (data.Count == 0)
                 {
                     args.Player.SendErrorMessage("Auction not found!");
@@ -277,23 +274,23 @@ namespace Skynomi.AuctionSystem
                 }
 
                 int totalPrice = amount * price;
-                if (AuctionSystem.Database.db.GetBalance(args.Player.Name) < totalPrice)
+                if (Database.db.GetBalance(args.Player.Name) < totalPrice)
                 {
-                    args.Player.SendErrorMessage("You don't have enough money to buy this item! You need " + Skynomi.Utils.Util.CurrencyFormat(totalPrice));
+                    args.Player.SendErrorMessage("You don't have enough money to buy this item! You need " + Utils.Util.CurrencyFormat(totalPrice));
                     return;
                 }
 
-                if (AuctionSystem.Database.UpdateAuction(playername, itemid, amountInAuction - amount))
+                if (Database.UpdateAuction(playername, itemid, amountInAuction - amount))
                 {
-                    AuctionSystem.Database.db.AddBalance(playername, totalPrice);
-                    AuctionSystem.Database.db.RemoveBalance(args.Player.Name, totalPrice);
+                    Database.db.AddBalance(playername, totalPrice);
+                    Database.db.RemoveBalance(args.Player.Name, totalPrice);
 
                     args.Player.GiveItem(itemid, amount);
 
                     string detail = $"[c/00FF00:== Auction Buy Succesfull ==]\n" +
                                     $"[c/0000FF:From:] {playername}\n" +
                                     $"[c/0000FF:Item:] {TShock.Utils.GetItemById(itemid).Name} [i/s{amount}:{itemid}]\n" +
-                                    $"[c/0000FF:Price:] {Skynomi.Utils.Util.CurrencyFormat(totalPrice)}";
+                                    $"[c/0000FF:Price:] {Utils.Util.CurrencyFormat(totalPrice)}";
                     args.Player.SendMessage(detail, Color.White);
                 }
                 else
@@ -309,7 +306,8 @@ namespace Skynomi.AuctionSystem
         #endregion
 
         #region Auction Remove
-        public static void AuctionRemove(CommandArgs args)
+
+        private static void AuctionRemove(CommandArgs args)
         {
             try
             {
@@ -319,8 +317,7 @@ namespace Skynomi.AuctionSystem
                     return;
                 }
 
-                int itemid;
-                if (!int.TryParse(args.Parameters[0], out itemid))
+                if (!int.TryParse(args.Parameters[0], out var itemid))
                 {
                     itemid = TShock.Utils.GetItemByName(args.Parameters[0]).Where(x => x.Name.ToLower() == args.Parameters[0].ToLower()).Select(x => x.netID).FirstOrDefault();
                     if (itemid == 0)
@@ -330,7 +327,7 @@ namespace Skynomi.AuctionSystem
                     }
                 }
 
-                var auctions = AuctionSystem.Database.listAuction(args.Player.Name, true);
+                var auctions = Database.listAuction(args.Player.Name, true);
                 bool itemExists = false;
                 int amount = 1;
                 foreach (var auction in auctions)
@@ -350,7 +347,7 @@ namespace Skynomi.AuctionSystem
                     return;
                 }
 
-                if (AuctionSystem.Database.RemoveAuction(args.Player.Name, itemid))
+                if (Database.RemoveAuction(args.Player.Name, itemid))
                 {
                     args.Player.SendSuccessMessage($"Successfully removed auction for {TShock.Utils.GetItemById(itemid).Name} ([i/s{amount}:{itemid}])");
                     args.Player.GiveItem(itemid, amount);
@@ -368,7 +365,8 @@ namespace Skynomi.AuctionSystem
         #endregion
 
         #region Auction Remove Admin
-        public static void AdminAuctionRemove(CommandArgs args)
+
+        private static void AdminAuctionRemove(CommandArgs args)
         {
             try
             {
@@ -379,8 +377,7 @@ namespace Skynomi.AuctionSystem
                 }
 
                 string playername = args.Parameters[0];
-                int itemid;
-                if (!int.TryParse(args.Parameters[1], out itemid))
+                if (!int.TryParse(args.Parameters[1], out var itemid))
                 {
                     itemid = TShock.Utils.GetItemByName(args.Parameters[1]).Where(x => x.Name.ToLower() == args.Parameters[1].ToLower()).Select(x => x.netID).FirstOrDefault();
                     if (itemid == 0)
@@ -390,7 +387,7 @@ namespace Skynomi.AuctionSystem
                     }
                 }
 
-                var auctions = AuctionSystem.Database.listAuction(playername, true);
+                var auctions = Database.listAuction(playername, true);
                 bool itemExists = false;
                 int amount = 1;
                 foreach (var auction in auctions)
@@ -410,7 +407,7 @@ namespace Skynomi.AuctionSystem
                     return;
                 }
 
-                if (AuctionSystem.Database.RemoveAuction(playername, itemid))
+                if (Database.RemoveAuction(playername, itemid))
                 {
                     args.Player.SendSuccessMessage($"Successfully removed auction for {TShock.Utils.GetItemById(itemid).Name} ([i/s{amount}:{itemid}]) from {playername}'s auction list.");
                 }

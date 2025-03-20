@@ -2,9 +2,9 @@ using TShockAPI;
 
 namespace Skynomi.PlaytimeReward
 {
-    public class Commands
+    public abstract class Commands
     {
-        private static Skynomi.Database.Database db = new();
+        private static readonly Skynomi.Database.Database db = new();
         public static void Initialize()
         {
             TShockAPI.Commands.ChatCommands.Add(new Command(Permissions.Playtime, Playtime, "playtime", "pt")
@@ -28,7 +28,7 @@ namespace Skynomi.PlaytimeReward
                 playtimeCache.Update(args.Player.Name, playtime - 30);
                 int reward = PlaytimeReward.config?.Reward ?? 0;
                 db.AddBalance(args.Player.Name, db.GetBalance(args.Player.Name) + reward);
-                args.Player.SendSuccessMessage($"You have claimed your playtime reward and received {Skynomi.Utils.Util.CurrencyFormat(reward)}!");
+                args.Player.SendSuccessMessage($"You have claimed your playtime reward and received {Utils.Util.CurrencyFormat(reward)}!");
             }
             else
             {

@@ -16,14 +16,12 @@ namespace Skynomi.PlaytimeReward
 
             try
             {
-                Config config = new Config();
-
                 var defaultConfig = new Config();
                 if (!File.Exists(configPath))
                 {
                     File.WriteAllText(configPath, JsonConvert.SerializeObject(defaultConfig, Formatting.Indented));
                 }
-                config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configPath)) ?? new Config();
+                var config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configPath)) ?? new Config();
 
                 return config;
             }

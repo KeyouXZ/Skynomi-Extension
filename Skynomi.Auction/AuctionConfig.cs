@@ -1,11 +1,11 @@
 namespace Skynomi.AuctionSystem
 {
-    public class Permissions
+    public abstract class Permissions
     {
-        public static readonly string List = "auction.list";
-        public static readonly string Add = "auction.add";
-        public static readonly string Buy = "auction.buy";
-        public static readonly string Delete = "auction.delete";
-        public static readonly string AdminDelete = "auction.admin.delete";
+        public const string List = "auction.list";
+        public const string Add = "auction.add";
+        public const string Buy = "auction.buy";
+        public const string Delete = "auction.delete";
+        public const string AdminDelete = "auction.admin.delete";
     }
 }

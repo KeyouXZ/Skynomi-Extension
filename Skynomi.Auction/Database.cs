@@ -2,10 +2,10 @@ using TShockAPI;
 
 namespace Skynomi.AuctionSystem
 {
-    public class Database
+    public abstract class Database
     {
-        public static Skynomi.Database.Database db;
-        private static string _databaseType = Skynomi.Database.Database._databaseType;
+        public static Skynomi.Database.Database? db;
+        private static readonly string _databaseType = Skynomi.Database.Database._databaseType;
 
         public class Auction
         {
@@ -19,9 +19,8 @@ namespace Skynomi.AuctionSystem
         {
             db = new Skynomi.Database.Database();
 
-            if (_databaseType == "mysql")
-            {
-                db.CustomVoid(@"
+            db.CustomVoid(_databaseType == "mysql"
+                ? @"
                     CREATE TABLE IF NOT EXISTS Auctions (
                         Id INT AUTO_INCREMENT PRIMARY KEY,
                         UUID VARCHAR(255) NOT NULL UNIQUE,
@@ -30,11 +29,8 @@ namespace Skynomi.AuctionSystem
                         Price INT NOT NULL,
                         Amount INT NOT NULL
                     )
-                ");
-            }
-            else if (_databaseType == "sqlite")
-            {
-                db.CustomVoid(@"
+                "
+                : @"
                     CREATE TABLE IF NOT EXISTS Auctions (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         UUID VARCHAR(255) NOT NULL UNIQUE,
@@ -44,7 +40,6 @@ namespace Skynomi.AuctionSystem
                         Amount INTEGER NOT NULL
                     )
                 ");
-            }
 
             var auctionCache = Skynomi.Database.CacheManager.Cache.GetCache<Auction>("Auctions");
             auctionCache.MysqlQuery = "SELECT UUID AS 'Key', JSON_OBJECT('Username', Username, 'ItemId', ItemId, 'Price', Price, 'Amount', Amount) AS 'Value' FROM Auctions";

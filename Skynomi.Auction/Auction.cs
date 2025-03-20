@@ -20,17 +20,14 @@ namespace Skynomi.AuctionSystem
             {
                 return;
             }
-            AuctionSystem.Database.Initialize();
-            AuctionSystem.Commands.Initialize();
+            Database.Initialize();
+            Commands.Initialize();
         }
 
         public void PostInitialize(EventArgs args)
         {
-            if (!Main.ServerSideCharacter)
-            {
-                TShock.Log.ConsoleError($"{Skynomi.Utils.Messages.Name} Auction has been disabled because Server Side Character is not enabled.");
-                return;
-            }
+            if (Main.ServerSideCharacter) return;
+            TShock.Log.ConsoleError($"{Messages.Name} Auction has been disabled because Server Side Character is not enabled.");
         }
     }
 }

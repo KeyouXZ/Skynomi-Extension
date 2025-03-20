@@ -1,39 +1,34 @@
 namespace Skynomi.PlaytimeReward
 {
-    public class Database
+    public abstract class Database
     {
-        public static Skynomi.Database.Database? db;
-        private static string _databaseType = Skynomi.Database.Database._databaseType;
+        private static Skynomi.Database.Database? db;
+        private static readonly string _databaseType = Skynomi.Database.Database._databaseType;
 
         public static void Initialize()
         {
             db = new Skynomi.Database.Database();
 
-            if (_databaseType == "mysql")
-            {
-                db.CustomVoid(@"
+            db.CustomVoid(_databaseType == "mysql"
+                ? @"
                     CREATE TABLE IF NOT EXISTS PRewards (
                         Id INT AUTO_INCREMENT PRIMARY KEY,
                         Username VARCHAR(255) UNIQUE NOT NULL,
                         Time INT NOT NULL
                     )
-                ");
-            }
-            else if (_databaseType == "sqlite")
-            {
-                db.CustomVoid(@"
+                "
+                : @"
                     CREATE TABLE IF NOT EXISTS PRewards (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Username TEXT UNIQUE NOT NULL,
                         Time INTEGER NOT NULL
                     )
                 ");
-            }
 
             PlaytimeInitialize();
         }
 
-        public static void PlaytimeInitialize()
+        private static void PlaytimeInitialize()
         {
             var cache = Skynomi.Database.CacheManager.Cache.GetCache<int>("Playtime");
             cache.MysqlQuery = "SELECT Username AS 'Key', Time AS 'Value' FROM PRewards";

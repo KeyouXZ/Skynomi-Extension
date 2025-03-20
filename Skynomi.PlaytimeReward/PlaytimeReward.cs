@@ -15,32 +15,32 @@ namespace Skynomi.PlaytimeReward
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
         public string Author => "Keyou";
 
-        public static DateTime lastTime = DateTime.UtcNow;
-        public static List<string> onlinePlayers = new List<string>();
-        public static Skynomi.PlaytimeReward.Config? config;
+        private static DateTime lastTime = DateTime.UtcNow;
+        private static readonly List<string> onlinePlayers = new List<string>();
+        public static Config? config;
 
         public void Initialize()
         {
             ServerApi.Hooks.ServerJoin.Register(Loader.GetPlugin(), PlayerJoin);
             ServerApi.Hooks.ServerLeave.Register(Loader.GetPlugin(), PlayerLeave);
 
-            Skynomi.PlaytimeReward.Database.Initialize();
-            Skynomi.PlaytimeReward.Commands.Initialize();
+            Database.Initialize();
+            Commands.Initialize();
 
-            config = Skynomi.PlaytimeReward.Config.Read();
+            config = Config.Read();
 
             Save();
         }
 
         public void Reload(ReloadEventArgs args)
         {
-            config = Skynomi.PlaytimeReward.Config.Read();
+            config = Config.Read();
             Save();
         }
 
         private CancellationTokenSource? cts;
 
-        public void Save()
+        private void Save()
         {
             cts = new CancellationTokenSource();
             Task.Run(async () =>
@@ -53,14 +53,14 @@ namespace Skynomi.PlaytimeReward
             }, cts.Token);
         }
 
-        public void PlayerJoin(JoinEventArgs args)
+        private void PlayerJoin(JoinEventArgs args)
         {
             UpdateTime();
-            Skynomi.PlaytimeReward.Database.CreatePlayer(TShock.Players[args.Who].Name);
+            Database.CreatePlayer(TShock.Players[args.Who].Name);
             onlinePlayers.Add(TShock.Players[args.Who].Name);
         }
 
-        public void PlayerLeave(LeaveEventArgs args)
+        private void PlayerLeave(LeaveEventArgs args)
         {
             UpdateTime();
             onlinePlayers.Remove(TShock.Players[args.Who].Name);
