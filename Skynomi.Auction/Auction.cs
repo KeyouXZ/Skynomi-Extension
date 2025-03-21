@@ -27,7 +27,7 @@ namespace Skynomi.AuctionSystem
         public void PostInitialize(EventArgs args)
         {
             if (Main.ServerSideCharacter) return;
-            TShock.Log.ConsoleError($"{Messages.Name} Auction has been disabled because Server Side Character is not enabled.");
+            Log.Error("Auction has been disabled because Server Side Character is not enabled.");
         }
     }
 }

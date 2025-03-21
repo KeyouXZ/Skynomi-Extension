@@ -42,9 +42,11 @@ namespace Skynomi.AuctionSystem
                 ");
 
             var auctionCache = Skynomi.Database.CacheManager.Cache.GetCache<Auction>("Auctions");
-            auctionCache.MysqlQuery = "SELECT UUID AS 'Key', JSON_OBJECT('Username', Username, 'ItemId', ItemId, 'Price', Price, 'Amount', Amount) AS 'Value' FROM Auctions";
+            auctionCache.MysqlQuery =
+                "SELECT UUID AS 'Key', JSON_OBJECT('Username', Username, 'ItemId', ItemId, 'Price', Price, 'Amount', Amount) AS 'Value' FROM Auctions";
             auctionCache.SqliteQuery = auctionCache.MysqlQuery;
-            auctionCache.SaveMysqlQuery = "INSERT INTO Auctions (UUID, Username, ItemId, Price, Amount) VALUES (@key, @value_Username, @value_ItemId, @value_Price, @value_Amount)";
+            auctionCache.SaveMysqlQuery =
+                "INSERT INTO Auctions (UUID, Username, ItemId, Price, Amount) VALUES (@key, @value_Username, @value_ItemId, @value_Price, @value_Amount)";
             auctionCache.SaveSqliteQuery = auctionCache.SaveMysqlQuery;
 
             auctionCache.Init();
@@ -54,12 +56,13 @@ namespace Skynomi.AuctionSystem
         {
             try
             {
-                Skynomi.Database.CacheManager.Cache.GetCache<Auction>("Auctions").Update(username + "_" + itemId, new Auction { Username = username,ItemId = itemId, Price = price, Amount = amount });
+                Skynomi.Database.CacheManager.Cache.GetCache<Auction>("Auctions").Update(username + "_" + itemId,
+                    new Auction { Username = username, ItemId = itemId, Price = price, Amount = amount });
                 return true;
             }
             catch (Exception ex)
             {
-                TShock.Log.ConsoleError(ex.ToString());
+                Utils.Log.Error(ex.ToString());
                 return false;
             }
         }
@@ -73,7 +76,7 @@ namespace Skynomi.AuctionSystem
             }
             catch (Exception ex)
             {
-                TShock.Log.ConsoleError(ex.ToString());
+                Utils.Log.Error(ex.ToString());
                 return false;
             }
         }
@@ -94,7 +97,7 @@ namespace Skynomi.AuctionSystem
             }
             catch (Exception ex)
             {
-                TShock.Log.ConsoleError(ex.ToString());
+                Utils.Log.Error(ex.ToString());
                 return false;
             }
         }
@@ -103,10 +106,11 @@ namespace Skynomi.AuctionSystem
         {
             var auctions = Skynomi.Database.CacheManager.Cache.GetCache<Auction>("Auctions").GetAllValues();
 
-            if (username)
-                return auctions.Where(e => e.Username == playername && e.Amount > 0).Select(e => new { e.ItemId, e.Price, e.Amount }).Cast<object>().ToList();
-
-            return auctions.Where(e => e.Amount > 0).Select(e => new { e.Username, e.ItemId, e.Price, e.Amount }).Cast<object>().ToList();
+            return username
+                ? auctions.Where(e => e.Username == playername && e.Amount > 0)
+                    .Select(e => new { e.ItemId, e.Price, e.Amount }).Cast<object>().ToList()
+                : auctions.Where(e => e.Amount > 0).Select(e => new { e.Username, e.ItemId, e.Price, e.Amount })
+                    .Cast<object>().ToList();
         }
     }
 }

@@ -231,6 +231,7 @@ namespace Skynomi.AuctionSystem
                 }
 
                 string playername = args.Parameters[0];
+                
                 if (!int.TryParse(args.Parameters[1], out var itemid))
                 {
                     itemid = TShock.Utils.GetItemByName(args.Parameters[1]).Where(x => x.Name.ToLower() == args.Parameters[1].ToLower()).Select(x => x.netID).FirstOrDefault();
@@ -256,16 +257,22 @@ namespace Skynomi.AuctionSystem
                     args.Player.SendErrorMessage("Amount must be at least 1!");
                     return;
                 }
-
-                var data = Database.listAuction(args.Player.Name);
-                if (data.Count == 0)
+                
+                if (!Skynomi.Database.CacheManager.Cache.GetCache<Database.Auction>("Auctions").GetAllKeys().Contains(playername + "_" + itemid))
+                {
+                    args.Player.SendErrorMessage("Auction not found!");
+                    return;
+                }
+                Database.Auction data = Skynomi.Database.CacheManager.Cache.GetCache<Database.Auction>("Auctions").GetValue(playername + "_" + itemid);
+                
+                if (data.Amount == 0)
                 {
                     args.Player.SendErrorMessage("Auction not found!");
                     return;
                 }
 
-                int price = (int)((dynamic)data)[0].Price;
-                int amountInAuction = (int)((dynamic)data)[0].Amount;
+                int price = data.Price;
+                int amountInAuction = data.Amount;
 
                 if (amount > amountInAuction)
                 {
@@ -300,7 +307,7 @@ namespace Skynomi.AuctionSystem
             }
             catch (Exception ex)
             {
-                TShock.Log.ConsoleError(ex.ToString());
+                Utils.Log.Error(ex.ToString());
             }
         }
         #endregion
@@ -359,7 +366,7 @@ namespace Skynomi.AuctionSystem
             }
             catch (Exception ex)
             {
-                TShock.Log.ConsoleError(ex.ToString());
+                Utils.Log.Error(ex.ToString());
             }
         }
         #endregion
@@ -418,7 +425,7 @@ namespace Skynomi.AuctionSystem
             }
             catch (Exception ex)
             {
-                TShock.Log.ConsoleError(ex.ToString());
+                Utils.Log.Error(ex.ToString());
             }
         }
         #endregion
