@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skynomi.PlaytimeReward", "S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skynomi.Auction", "Skynomi.Auction\Skynomi.Auction.csproj", "{ADD23051-459E-4B03-8782-74DFAD903D98}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skynomi.Web", "Skynomi.Web\Skynomi.Web.csproj", "{9B43C841-113A-4145-AA77-B97C18FC00AE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{ADD23051-459E-4B03-8782-74DFAD903D98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ADD23051-459E-4B03-8782-74DFAD903D98}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ADD23051-459E-4B03-8782-74DFAD903D98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B43C841-113A-4145-AA77-B97C18FC00AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B43C841-113A-4145-AA77-B97C18FC00AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B43C841-113A-4145-AA77-B97C18FC00AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B43C841-113A-4145-AA77-B97C18FC00AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
