@@ -54,7 +54,7 @@ public abstract class WebServer
         lock (clients)
         {
             foreach (var ws in clients)
-                ws.Dispose();
+                ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Server shutdown", CancellationToken.None).GetAwaiter();
         }
 
         cts.Cancel();

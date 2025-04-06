@@ -63,7 +63,11 @@ namespace Skynomi.PlaytimeReward
         private void PlayerLeave(LeaveEventArgs args)
         {
             UpdateTime();
-            onlinePlayers.Remove(TShock.Players[args.Who].Name);
+            var player = TShock.Players[args.Who];
+            if (player != null)
+            {
+                onlinePlayers.Remove(player.Name);
+            }
         }
 
         public static void UpdateTime()
